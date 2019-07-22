@@ -98,12 +98,13 @@ class FeedbackPin < Pin
 end
 
 class Game
-    @@past_guesses = []
-    @@past_feedback = []
+
 
     def initialize(codemaker, codebreaker)
         @codemaker = codemaker
         @codebreaker = codebreaker
+        @past_guesses = []
+        @past_feedback = []
     end
 
     def welcome_codemaker
@@ -125,10 +126,10 @@ class Game
 
     def one_round
         # One guess
-        @@past_guesses << @codebreaker.take_guess
+        @past_guesses << @codebreaker.take_guess
 
         # Refactor data structure (guesses to 2d array), so you don't need this line of code anymore
-        @@past_feedback << self.give_feedback
+        @past_feedback << self.give_feedback
 
         @codebreaker.reset_guesses  
     end
@@ -150,7 +151,7 @@ class Game
     end
 
     def win?
-        if @@past_feedback.include?(["black", "black", "black", "black"])
+        if @past_feedback.include?(["black", "black", "black", "black"])
             return true
         end
         false
@@ -170,9 +171,9 @@ class Game
 
             # Second condition, too tired to put into the while expression 
             if (i == 12) 
-                puts "---------------------------------------------------------------------------------------"
+                puts "-------------------------------------------------------------------------------------"
                 puts "Sorry, but you couldn't solve the code in #{i} steps, you looser, pew pew, explosions!!"
-                puts "---------------------------------------------------------------------------------------"
+                puts "-------------------------------------------------------------------------------------"
                 puts ""
                 return
             end
@@ -193,14 +194,14 @@ class Game
         puts "    Guesses".ljust(51) + "Feedback"
         puts "    " + "-" * 7 + " ".ljust(40) + "-" * 8
 
-        @@past_guesses.each_with_index do |guess, index|
+        @past_guesses.each_with_index do |guess, index|
             empty_space = " " * (47 - guess.inspect.to_s.length)
 
             # prepend a "0" if index is smaller 10
             if index + 1 < 10
-                puts "0#{index + 1}) " + guess.inspect + empty_space + @@past_feedback[index].inspect
+                puts "0#{index + 1}) " + guess.inspect + empty_space + @past_feedback[index].inspect
             else 
-                puts "#{index + 1}) " + guess.inspect + empty_space + @@past_feedback[index].inspect
+                puts "#{index + 1}) " + guess.inspect + empty_space + @past_feedback[index].inspect
             end
         end
         puts ""
@@ -210,8 +211,13 @@ end
 =begin
     ToDo: 
         - Refactor Code, so that the user only inputs a string with four colors, e.g. "red, red, red, yellow"
+        - Refactor code, so that the user can input abbreviations (e.g. r, r, y, y)
         -- Should also check whether input is correct
         - Implement AI codebreaker (the user is the codemaker)
+        - Instead of @@class_variables use @instance_variables
+        - Add question: Would you like to play again? Y/N
+        - Add instructions to play?
+
 =end
 
 game = Game.new(Codemaker.new, Codebreaker.new)
