@@ -13,7 +13,7 @@ The codemaker will then give feedback whether a) a color is correct, but not the
 but all positions are wrong. This is indicated with a white feedback pin). Or b) a color is correct and the position
 is correct (indicated by black feedback pins).
 
-## Game rules: 
+## Game rules 
 The codebreaker has a maximum of 12 trys to break the code
 
 ## Translation into object-oriented programming
@@ -23,28 +23,28 @@ The codebreaker has a maximum of 12 trys to break the code
  - code
 
 - class Codebreaker < Player
- - take_guess()
- - get_guesses()
+  - take_guess()
+  - get_guesses()
 - class Codemaker < Player
- - create_code()
- - get_code()
+  - create_code()
+  - get_code()
 
 - class Pin 
- - initialize() (should check whether input of user is allowed color)
- - color
+  - initialize() (should check whether input of user is allowed color)
+  - color
 
 - class FeedbackPin < Pin
 - class CodePin < Pin
 
 - class Game
- - welcome()
- - one_round()
- - max_round?()
- - give_feedback()
- - wrong_input?()
- - print_board()
- - update_board()
- - win? 
+  - welcome()
+  - one_round()
+  - max_round?()
+  - give_feedback()
+  - wrong_input?()
+  - print_board()
+  - update_board()
+  - win? 
 
 
 ## Artificial intelligence
