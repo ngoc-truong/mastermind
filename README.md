@@ -19,8 +19,8 @@ The codebreaker has a maximum of 12 trys to break the code
 ## Translation into object-oriented programming
 ### Classes
 - class Players
- - role
- - code
+  - role
+  - code
 
 - class Codebreaker < Player
   - take_guess()
