@@ -1,34 +1,32 @@
 # Doesn't work yet
 class String 
-    class String
-        # colorization
-        def colorize(color_code)
-          "\e[#{color_code}m#{self}\e[0m"
-        end
-      
-        def red
-          colorize(31)
-        end
-        
-        def light_blue
-            colorize(36)
-        end
+    # ["red", "cyan", "yellow", "green", "blue", "pink"]
+    def colorize(color_code)
+        "\e[#{color_code}m#{self}\e[0m"
+    end
+    
+    def red
+        colorize(31)
+    end
+    
+    def cyan
+        colorize(36)
+    end
 
-        def yellow
-            colorize(33)
-          end
-      
-        def green
-          colorize(32)
+    def yellow
+        colorize(33)
         end
-      
-        def blue
-          colorize(34)
-        end
-      
-        def pink
-          colorize(35)
-        end
+    
+    def green
+        colorize(32)
+    end
+    
+    def blue
+        colorize(34)
+    end
+    
+    def pink
+        colorize(35)
     end
 end
 
@@ -44,12 +42,12 @@ class Player
 
     def create_code
         puts ""
-        puts "You can choose from these colors: red, orange, yellow, green, blue, pink" 
-        puts "Please, give me a color code, seperated by a space, e.g. 'red orange yellow green'"
+        puts "You can choose from these colors: #{"red".red}, #{"cyan".cyan}, #{"yellow".yellow}, #{"green".green}, #{"blue".blue}, #{"pink".pink}" 
+        puts "Please, give me a color code, seperated by a space, e.g. 'red cyan yellow green'"
         color_code = gets.chomp.downcase.split(/\W+/)
 
         while color_code.size != 4 do
-            puts "Sorry, but you have to provide four and not #{color_code} colors, e.g. 'red orange yellow green"
+            puts "Sorry, but you have to provide four and not #{color_code.size} colors, e.g. 'red cyan yellow green"
 
             color_code = nil
             color_code = gets.chomp.downcase.split(/\W+/)
@@ -123,7 +121,7 @@ end
 
 
 class CodePin < Pin
-    @@allowed_colors = ["red", "orange", "yellow", "green", "blue", "pink"]
+    @@allowed_colors = ["red", "cyan", "yellow", "green", "blue", "pink"]
 
     def initialize(color)
         super(color, @@allowed_colors)
@@ -231,25 +229,63 @@ class Game
 
     def print_board
         puts ""
-        puts "    " + "-" * 7 + " ".ljust(40) + "-" * 8
-        puts "    Guesses".ljust(51) + "Feedback"
-        puts "    " + "-" * 7 + " ".ljust(40) + "-" * 8
+        puts "    " + "-" * 7 + " ".ljust(29) + "-" * 8
+        puts "    Guesses".ljust(40) + "Feedback"
+        puts "    " + "-" * 7 + " ".ljust(29) + "-" * 8
 
         @past_guesses.each_with_index do |guess, index|
-            empty_space = " " * (47 - guess.inspect.to_s.length)
+            # Get the length of empty space
+            num_of_characters = 0
+            guess.each do |item|
+                num_of_characters += item.length
+            end
+
+            empty_space = " " * (32 - num_of_characters)
+
+            # Paint the pins in terminal
+            string_of_colors = ""
+            guess.each_with_index { |color, index| string_of_colors += "#{paint_to(guess)[index]} " }
 
             # prepend a "0" if index is smaller 10
             if index + 1 < 10
-                puts "0#{index + 1}) " + guess.inspect + empty_space + @past_feedback[index].inspect
+                puts "0#{index + 1}) " + string_of_colors  + empty_space + @past_feedback[index].inspect
             else 
-                puts "#{index + 1}) " + guess.inspect + empty_space + @past_feedback[index].inspect
+                puts "#{index + 1}) " + string_of_colors + empty_space + @past_feedback[index].inspect
             end
         end
         puts ""
     end
+
+    def paint_to(code)
+        # ["red", "cyan", "yellow", "green", "blue", "pink"]
+
+        colored_code = []
+
+        code.each do |color|
+            case color
+            when "red"
+                colored_code << color.red
+            when "cyan"
+                colored_code << color.cyan
+            when "yellow"
+                colored_code << color.yellow
+            when "green"
+                colored_code << color.green
+            when "blue"
+                colored_code << color.blue
+            when "pink"
+                colored_code << color.pink
+            end
+        end
+
+        colored_code
+    end
+
 end
 
 
+game = Game.new(Codemaker.new, Codebreaker.new)
+game.start
 
 =begin
     ToDo: 
@@ -257,9 +293,5 @@ end
         - Implement AI codebreaker (the user is the codemaker)
         - Add question: Would you like to play again? Y/N
         - Add instructions to play?
-        - Add real colors to console?
-
 =end
 
-game = Game.new(Codemaker.new, Codebreaker.new)
-game.start
