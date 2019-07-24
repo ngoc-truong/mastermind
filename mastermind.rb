@@ -1,3 +1,38 @@
+# Doesn't work yet
+class String 
+    class String
+        # colorization
+        def colorize(color_code)
+          "\e[#{color_code}m#{self}\e[0m"
+        end
+      
+        def red
+          colorize(31)
+        end
+        
+        def light_blue
+            colorize(36)
+        end
+
+        def yellow
+            colorize(33)
+          end
+      
+        def green
+          colorize(32)
+        end
+      
+        def blue
+          colorize(34)
+        end
+      
+        def pink
+          colorize(35)
+        end
+    end
+end
+
+
 class Player
     attr_reader :role
     attr_accessor :code
@@ -8,19 +43,26 @@ class Player
     end
 
     def create_code
-        # Usability-question: Is it better to get individual colors or four colors at once, seperated by comma?
-        # If all at once: 1) split string to array, 2) for each item create a Pin and check whether items are allowed (already implemented in Pin class), 3) Add array to @code
-        # Code will be a 2d-array
+        puts ""
+        puts "You can choose from these colors: red, orange, yellow, green, blue, pink" 
+        puts "Please, give me a color code, seperated by a space, e.g. 'red orange yellow green'"
+        color_code = gets.chomp.downcase.split(/\W+/)
 
-        4.times do |index| 
-            puts ""
-            puts "#{index + 1}. Position: Please choose a color: red, orange, yellow, green, blue, or violett."
-            color = gets.chomp.downcase
+        while color_code.size != 4 do
+            puts "Sorry, but you have to provide four and not #{color_code} colors, e.g. 'red orange yellow green"
+
+            color_code = nil
+            color_code = gets.chomp.downcase.split(/\W+/)
+            puts color_code.size
+        end
+
+        color_code.each do |color|
             code_pin = CodePin.new(color)
             @code << code_pin
-            puts ""
-            puts self.get_code_colors.inspect
         end
+
+        puts ""
+        puts self.get_code_colors.inspect
         return self.get_code_colors
     end
 
@@ -81,7 +123,7 @@ end
 
 
 class CodePin < Pin
-    @@allowed_colors = ["red", "orange", "yellow", "green", "blue", "violett"]
+    @@allowed_colors = ["red", "orange", "yellow", "green", "blue", "pink"]
 
     def initialize(color)
         super(color, @@allowed_colors)
@@ -97,9 +139,8 @@ class FeedbackPin < Pin
     end
 end
 
+
 class Game
-
-
     def initialize(codemaker, codebreaker)
         @codemaker = codemaker
         @codebreaker = codebreaker
@@ -208,15 +249,15 @@ class Game
     end
 end
 
+
+
 =begin
     ToDo: 
-        - Refactor Code, so that the user only inputs a string with four colors, e.g. "red, red, red, yellow"
         - Refactor code, so that the user can input abbreviations (e.g. r, r, y, y)
-        -- Should also check whether input is correct
         - Implement AI codebreaker (the user is the codemaker)
-        - Instead of @@class_variables use @instance_variables
         - Add question: Would you like to play again? Y/N
         - Add instructions to play?
+        - Add real colors to console?
 
 =end
 
