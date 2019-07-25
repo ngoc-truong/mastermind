@@ -1,6 +1,4 @@
-# Doesn't work yet
 class String 
-    # ["red", "cyan", "yellow", "green", "blue", "pink"]
     def colorize(color_code)
         "\e[#{color_code}m#{self}\e[0m"
     end
@@ -34,17 +32,25 @@ end
 class Player
     attr_reader :role
     attr_accessor :code
+    @@colors = ["red", "cyan", "yellow", "green", "blue", "pink"]
 
     def initialize(role)
         @role = role
         @code = []
     end
 
-    def create_code
+    # Refactor code, so that codemaker only has one code and codebreaker can have 12 codes?
+    def create_code_manually
         puts ""
-        puts "You can choose from these colors: #{"red".red}, #{"cyan".cyan}, #{"yellow".yellow}, #{"green".green}, #{"blue".blue}, #{"pink".pink}" 
+        puts "You can choose from these colors: #{@@colors[0].red}, #{@@colors[1].cyan}, #{@@colors[2].yellow}, #{@@colors[3].green}, #{@@colors[4].blue}, #{@@colors[5].pink}" 
         puts "Please, give me a color code, seperated by a space, e.g. 'red cyan yellow green'"
         color_code = gets.chomp.downcase.split(/\W+/)
+
+        if color_code[0] == "cheat"
+            puts "Warum kommt der hier nicht rien?"
+            puts self.get_code_colors.inspect
+            puts "seltsam, hier auch?"
+        end 
 
         while color_code.size != 4 do
             puts "Sorry, but you have to provide four and not #{color_code.size} colors, e.g. 'red cyan yellow green"
@@ -60,7 +66,15 @@ class Player
         end
 
         puts ""
-        puts self.get_code_colors.inspect
+        return self.get_code_colors
+    end
+
+    def create_code_randomly
+        4.times do 
+            random_number = rand(0..5)
+            code_pin = CodePin.new(@@colors[random_number])
+            @code << code_pin
+        end
         return self.get_code_colors
     end
 
@@ -86,7 +100,7 @@ class Codebreaker < Player
 
     # Only renaming methods here. Functionality is (almost) the same as in parent methods
     def take_guess
-        create_code
+        create_code_manually
     end
 
     def get_guesses
@@ -146,6 +160,10 @@ class Game
         @past_feedback = []
     end
 
+    def choose_role
+        puts "What do you want to do? Guess or create a code?"
+    end
+
     def welcome_codemaker
         puts ""
         puts "-----------------------------------------------------------------------"
@@ -154,39 +172,70 @@ class Game
     end
 
     def welcome_codebreaker
-        puts "-----------------------------------------------------------------------"
-        puts "Welcome Agent Cody B. Reaker, please break the code and save the world!"
-        puts "-----------------------------------------------------------------------"
+        puts ""
+        puts <<~HEREDOC
+            --------------------------------------------------------------------------------
+            Welcome Agent Cody B. Reaker. 
+
+            The world needs you! Crack the code by choosing a color code combination. You 
+            can choose from six different colors. But remember: The evil knieval codemaker 
+            could also have used one color multiple times.
+
+            Our smart device will give you feedback on how good you are. If you see a black 
+            pin, you got one color and its position correct. If you see a white pin, you got 
+            one color correct (but not its position).
+
+            Good luck, Agent. We are trusting you.
+            --------------------------------------------------------------------------------
+        HEREDOC
     end
 
-    def generate_code
-        @codemaker.create_code
+    def create_code_manually
+        @codemaker.create_code_manually
+    end
+
+    def create_code_randomly
+        @codemaker.create_code_randomly
     end
 
     def one_round
-        # One guess
         @past_guesses << @codebreaker.take_guess
-
-        # Refactor data structure (guesses to 2d array), so you don't need this line of code anymore
         @past_feedback << self.give_feedback
-
         @codebreaker.reset_guesses  
     end
 
-    def give_feedback
-        feedback = []
 
-        @codebreaker.get_code_colors.each_with_index do |guess, index|
-            if guess == @codemaker.code[index].color 
-                correct_position = FeedbackPin.new("black")
-                feedback << correct_position.color
-            elsif @codemaker.get_code_colors.include?(guess)
-                correct_color = FeedbackPin.new("white")
-                feedback << correct_color.color
+    def give_feedback 
+        feedback = []
+        guess_colors = @codebreaker.get_code_colors
+        code_colors = @codemaker.get_code_colors
+
+        # First look at all the black pins (correct color + position)
+        guess_colors.each_with_index do |guess, index| 
+            if guess == code_colors[index]
+                feedback << FeedbackPin.new("black").color
+
+                # Delete colors which were already used
+                guess_colors[index] = ""
+                code_colors[index] = ""
+            end
+        end
+      
+        guess_colors.each_with_index do |guess, index| 
+            if code_colors.include?(guess) && guess != ""
+                feedback << FeedbackPin.new("white").color
+
+                # Delete one element of the colors which were already used
+                guess_colors[index] = ""
+                code_colors[code_colors.index(guess)] = ""
             end
         end
 
-        feedback
+        feedback.shuffle
+    end
+
+    def get_solution
+        @codemaker.get_code_colors
     end
 
     def win?
@@ -196,12 +245,20 @@ class Game
         false
     end
 
-    def start
+    def start_two_player
         self.welcome_codemaker
-        self.generate_code
+        self.create_code_manually
         40.times { puts " " }
+        self.all_rounds        
+    end
 
-        self.welcome_codebreaker
+    def start_user_is_codebreaker
+        self.create_code_randomly
+        puts self.welcome_codebreaker
+        self.all_rounds
+    end
+
+    def all_rounds
         i = 0
         while !win? 
             self.one_round
@@ -220,11 +277,10 @@ class Game
 
         if win? 
             puts "------------------------------------------------------------------"
-            puts "You won, Agent! You intelligent one of a kind %!$§(!§%*$&!!!111elf" 
+            puts "You won, Agent! You intelligent biest monster %!$§(!§%*$&!!!111elf" 
             puts "------------------------------------------------------------------"
             puts ""
         end
-
     end
 
     def print_board
@@ -256,12 +312,12 @@ class Game
         puts ""
     end
 
-    def paint_to(code)
+    def paint_to(array_code)
         # ["red", "cyan", "yellow", "green", "blue", "pink"]
 
         colored_code = []
 
-        code.each do |color|
+        array_code.each do |color|
             case color
             when "red"
                 colored_code << color.red
@@ -280,18 +336,27 @@ class Game
 
         colored_code
     end
-
 end
 
 
-game = Game.new(Codemaker.new, Codebreaker.new)
-game.start
+play = true
+
+while play 
+    game = Game.new(Codemaker.new, Codebreaker.new)
+    game.start_user_is_codebreaker
+    puts "The answer was #{game.get_solution.inspect}"
+    puts ""
+    puts "Do you want to play again? (y/n)"
+    answer = gets.chomp.downcase 
+    if answer == "n"
+        puts "Ok, tschö!"
+        play = false 
+    end
+end
+
 
 =begin
     ToDo: 
-        - Refactor code, so that the user can input abbreviations (e.g. r, r, y, y)
         - Implement AI codebreaker (the user is the codemaker)
-        - Add question: Would you like to play again? Y/N
-        - Add instructions to play?
 =end
 
